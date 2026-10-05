@@ -1,0 +1,40 @@
+[project]
+name = "gesture-client"
+version = "0.1.0"
+description = "PySide6 gesture recognition desktop client"
+requires-python = ">=3.10"
+dependencies = [
+    "gesture-shared",
+    "httpx>=0.27",
+    "matplotlib>=3.7",
+    "numpy>=1.24",
+    "opencv-python>=4.8",
+    "pandas>=2.0",
+    "pillow>=10",
+    # Qt 6.11 currently fails to load Qt6Core on some Windows installations
+    # (WinError 127). Keep the desktop build on the stable Qt 6.8 line.
+    "pyside6>=6.8,<6.9",
+    "pyyaml>=6",
+    "requests>=2.31",
+    "scipy>=1.10",
+    "seaborn>=0.13",
+    "setuptools>=68,<81",
+    # The bundled YOLOv5 checkpoint predates the PyTorch 2.6 safe-loading
+    # change, and newer Windows wheels fail on some older runtimes.
+    "torch>=2.5,<2.6",
+    "torchvision>=0.20,<0.21",
+    "tqdm>=4.66",
+]
+
+[project.scripts]
+gesture-client = "gesture_client.main:run"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gesture_client"]
+
+[tool.uv.sources]
+gesture-shared = { workspace = true }
