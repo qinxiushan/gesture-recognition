@@ -5,8 +5,8 @@ from gesture_shared import ActionRequest, Gesture, PoseRequest
 
 
 def test_action_contract_accepts_supported_gesture():
-    request = ActionRequest(request_id="abc", gesture="like", confidence=0.9)
-    assert request.gesture == Gesture.LIKE
+    request = ActionRequest(request_id="abc", gesture="thumbUp", confidence=0.9)
+    assert request.gesture == Gesture.THUMB_UP
 
 
 def test_action_contract_rejects_unknown_gesture():

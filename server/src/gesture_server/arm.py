@@ -14,9 +14,9 @@ log = logging.getLogger(__name__)
 ACTION_TEXT = {
     Gesture.FIVE: "夹爪开合两次",
     Gesture.OK: "腕部左右旋转后回中",
-    Gesture.SIX: "机械臂升降两次",
-    Gesture.LIKE: "机械臂点头两次",
-    Gesture.YES: "底座左右旋转后回中",
+    Gesture.FIST: "机械臂升降两次",
+    Gesture.THUMB_UP: "机械臂点头两次",
+    Gesture.HEART_SINGLE: "底座左右旋转后回中",
 }
 
 
@@ -72,14 +72,14 @@ class DofbotArm(ArmHardware):
                 self._servo(6, 135); self._servo(6, 30)
         elif gesture == Gesture.OK:
             self._servo(5, 0); self._servo(5, 180); self._servo(5, 90)
-        elif gesture == Gesture.SIX:
+        elif gesture == Gesture.FIST:
             for _ in range(2):
                 self._write6([90, 130, 35, 25, 90, 30])
                 self._write6([90, 155, 20, 20, 90, 30])
-        elif gesture == Gesture.LIKE:
+        elif gesture == Gesture.THUMB_UP:
             for _ in range(2):
                 self._servo(4, 55); self._servo(4, 20)
-        elif gesture == Gesture.YES:
+        elif gesture == Gesture.HEART_SINGLE:
             self._servo(1, 60); self._servo(1, 120); self._servo(1, 90)
         self.move_pose(Pose.SAFE)
 

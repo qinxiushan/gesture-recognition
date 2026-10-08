@@ -8,7 +8,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-SUPPORTED_GESTURES = {"five", "ok", "six", "like", "yes"}
+SUPPORTED_GESTURES = {"fist", "five", "heartSingle", "ok", "thumbUp"}
 REFERENCE_WEIGHTS = Path(
     "example/Dofbot_YOLO_Qt_Integrated_20260924_v3_recognition_pose/"
     "weights/gesture_yolov5s_final.pt"
@@ -52,7 +52,7 @@ class YoloV5Detector:
         self.model = AutoShape(raw_model)
         copy_attr(self.model, raw_model,
                   include=("yaml", "nc", "hyp", "names", "stride"))
-        self.model.names = {0: "five", 1: "ok", 2: "six", 3: "like", 4: "yes"}
+        self.model.names = {0: "fist", 1: "five", 2: "heartSingle", 3: "ok", 4: "thumbUp"}
         self.model.conf = confidence
         self.model.to(device)
         self.model.eval()

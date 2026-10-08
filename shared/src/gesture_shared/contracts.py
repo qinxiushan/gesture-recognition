@@ -14,11 +14,11 @@ def utc_now() -> datetime:
 
 
 class Gesture(str, Enum):
+    FIST = "fist"
     FIVE = "five"
+    HEART_SINGLE = "heartSingle"
     OK = "ok"
-    SIX = "six"
-    LIKE = "like"
-    YES = "yes"
+    THUMB_UP = "thumbUp"
 
 
 class Pose(str, Enum):
