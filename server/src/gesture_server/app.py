@@ -1,9 +1,6 @@
-from __future__ import annotations
-
 import asyncio
 import logging
-from contextlib import asynccontextmanager
-from dataclasses import dataclass
+from typing import Optional
 
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
@@ -19,13 +16,14 @@ from .config import ServerSettings
 log = logging.getLogger(__name__)
 
 
-@dataclass
 class Runtime:
-    camera: CameraSource
-    arm: ArmController
+    def __init__(self, camera: CameraSource, arm: ArmController):
+        self.camera = camera
+        self.arm = arm
 
 
-def create_app(settings: ServerSettings | None = None, runtime: Runtime | None = None) -> FastAPI:
+def create_app(settings: Optional[ServerSettings] = None,
+               runtime: Optional[Runtime] = None) -> FastAPI:
     settings = settings or ServerSettings()
     if runtime is None:
         camera: CameraSource = (MockCamera(settings.width, settings.height, settings.jpeg_quality)
@@ -35,17 +33,18 @@ def create_app(settings: ServerSettings | None = None, runtime: Runtime | None =
         hardware = DryRunArm() if settings.dry_run else DofbotArm()
         runtime = Runtime(camera=camera, arm=ArmController(hardware))
 
-    @asynccontextmanager
-    async def lifespan(app: FastAPI):
-        app.state.runtime = runtime
+    app = FastAPI(title="Gesture Robot Server", version="0.1.0")
+    app.state.runtime = runtime
+
+    @app.on_event("startup")
+    def startup():
         runtime.camera.start()
         runtime.arm.move_pose(Pose(settings.start_pose))
-        yield
+
+    @app.on_event("shutdown")
+    def shutdown():
         runtime.camera.stop()
         runtime.arm.shutdown()
-
-    app = FastAPI(title="Gesture Robot Server", version="0.1.0", lifespan=lifespan)
-    app.state.runtime = runtime
 
     @app.get(f"/api/{API_VERSION}/health", response_model=HealthResponse)
     def health(request: Request) -> HealthResponse:
@@ -61,7 +60,8 @@ def create_app(settings: ServerSettings | None = None, runtime: Runtime | None =
 
     async def frames(camera: CameraSource):
         while True:
-            data = await asyncio.to_thread(camera.get_jpeg, 2.0)
+            loop = asyncio.get_event_loop()
+            data = await loop.run_in_executor(None, camera.get_jpeg, 2.0)
             if data:
                 yield (b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: " +
                        str(len(data)).encode() + b"\r\n\r\n" + data + b"\r\n")

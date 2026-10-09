@@ -1,22 +1,21 @@
-from __future__ import annotations
-
 import logging
 import threading
 import time
 import uuid
 from abc import ABC, abstractmethod
 from collections import deque
+from typing import List, Optional, Set
 
 from gesture_shared import ActionRequest, ActionResponse, ActionState, ArmStatus, Gesture, Pose
 
 log = logging.getLogger(__name__)
 
 ACTION_TEXT = {
-    Gesture.FIVE: "夹爪开合两次",
-    Gesture.OK: "腕部左右旋转后回中",
     Gesture.FIST: "机械臂升降两次",
-    Gesture.THUMB_UP: "机械臂点头两次",
+    Gesture.FIVE: "夹爪开合两次",
     Gesture.HEART_SINGLE: "底座左右旋转后回中",
+    Gesture.OK: "腕部左右旋转后回中",
+    Gesture.THUMB_UP: "机械臂点头两次",
 }
 
 
@@ -34,7 +33,7 @@ class ArmHardware(ABC):
 class DryRunArm(ArmHardware):
     def __init__(self, action_duration: float = 0.15):
         self.action_duration = action_duration
-        self.calls: list[str] = []
+        self.calls = []  # type: List[str]
 
     def move_pose(self, pose: Pose) -> None:
         self.calls.append(f"pose:{pose.value}")
@@ -54,7 +53,7 @@ class DofbotArm(ArmHardware):
         import Arm_Lib  # type: ignore[import-not-found]
         self.arm = Arm_Lib.Arm_Device()
 
-    def _write6(self, pose: list[int], duration: int = 500) -> None:
+    def _write6(self, pose: List[int], duration: int = 500) -> None:
         self.arm.Arm_serial_servo_write6_array(pose, duration)
         time.sleep(duration / 1000 + 0.06)
 
@@ -90,12 +89,12 @@ class ArmController:
         self._lock = threading.Lock()
         self._busy = False
         self._accepting = True
-        self._current: str | None = None
-        self._last: str | None = None
-        self._error: str | None = None
+        self._current = None  # type: Optional[str]
+        self._last = None  # type: Optional[str]
+        self._error = None  # type: Optional[str]
         self._seen = deque(maxlen=history_size)
-        self._seen_set: set[str] = set()
-        self._thread: threading.Thread | None = None
+        self._seen_set = set()  # type: Set[str]
+        self._thread = None  # type: Optional[threading.Thread]
 
     @property
     def status(self) -> ArmStatus:

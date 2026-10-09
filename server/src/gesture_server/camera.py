@@ -1,9 +1,8 @@
-from __future__ import annotations
-
 import logging
 import threading
 import time
 from abc import ABC, abstractmethod
+from typing import Optional, Union
 
 import cv2
 import numpy as np
@@ -19,7 +18,7 @@ class CameraSource(ABC):
     def stop(self) -> None: ...
 
     @abstractmethod
-    def get_jpeg(self, timeout: float = 2.0) -> bytes | None: ...
+    def get_jpeg(self, timeout: float = 2.0) -> Optional[bytes]: ...
 
     @property
     @abstractmethod
@@ -27,7 +26,7 @@ class CameraSource(ABC):
 
     @property
     @abstractmethod
-    def last_error(self) -> str | None: ...
+    def last_error(self) -> Optional[str]: ...
 
     @property
     @abstractmethod
@@ -35,15 +34,15 @@ class CameraSource(ABC):
 
 
 class OpenCVCamera(CameraSource):
-    def __init__(self, source: int | str, width: int, height: int, fps: int, quality: int):
+    def __init__(self, source: Union[int, str], width: int, height: int, fps: int, quality: int):
         self.source, self.width, self.height = source, width, height
         self.fps, self.quality = fps, quality
-        self._capture: cv2.VideoCapture | None = None
-        self._jpeg: bytes | None = None
-        self._error: str | None = None
+        self._capture = None  # type: Optional[cv2.VideoCapture]
+        self._jpeg = None  # type: Optional[bytes]
+        self._error = None  # type: Optional[str]
         self._running = False
         self._condition = threading.Condition()
-        self._thread: threading.Thread | None = None
+        self._thread = None  # type: Optional[threading.Thread]
 
     @property
     def device(self) -> str:
@@ -54,7 +53,7 @@ class OpenCVCamera(CameraSource):
         return self._running and self._jpeg is not None
 
     @property
-    def last_error(self) -> str | None:
+    def last_error(self) -> Optional[str]:
         return self._error
 
     def start(self) -> None:
@@ -90,7 +89,7 @@ class OpenCVCamera(CameraSource):
                     self._condition.notify_all()
             time.sleep(max(0.0, interval - (time.monotonic() - started)))
 
-    def get_jpeg(self, timeout: float = 2.0) -> bytes | None:
+    def get_jpeg(self, timeout: float = 2.0) -> Optional[bytes]:
         with self._condition:
             if self._jpeg is None:
                 self._condition.wait(timeout)
@@ -129,6 +128,6 @@ class MockCamera(CameraSource):
     def stop(self) -> None:
         self._running = False
 
-    def get_jpeg(self, timeout: float = 2.0) -> bytes | None:
+    def get_jpeg(self, timeout: float = 2.0) -> Optional[bytes]:
         return self._jpeg if self._running else None
 

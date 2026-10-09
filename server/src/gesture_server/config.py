@@ -1,11 +1,19 @@
-from __future__ import annotations
+from typing import Union
 
-from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, validator
+
+try:
+    # Pydantic 2 on development machines.
+    from pydantic_settings import BaseSettings
+except ImportError:
+    # Pydantic 1.9 on the Python 3.6 Jetson.
+    from pydantic import BaseSettings
 
 
 class ServerSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="GESTURE_SERVER_", extra="ignore")
+    class Config:
+        env_prefix = "GESTURE_SERVER_"
+        extra = "ignore"
 
     host: str = "0.0.0.0"
     port: int = Field(default=8896, ge=1, le=65535)
@@ -18,14 +26,13 @@ class ServerSettings(BaseSettings):
     mock_camera: bool = False
     start_pose: str = "recognition"
 
-    @field_validator("start_pose")
-    @classmethod
+    @validator("start_pose")
     def valid_pose(cls, value: str) -> str:
         if value not in {"recognition", "safe"}:
             raise ValueError("start_pose must be recognition or safe")
         return value
 
     @property
-    def camera_source(self) -> int | str:
+    def camera_source(self) -> Union[int, str]:
         return int(self.camera) if self.camera.isdecimal() else self.camera
 
