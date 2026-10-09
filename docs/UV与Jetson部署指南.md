@@ -35,12 +35,12 @@ Remove-Item -Recurse -Force .pytest_cache
 
 ### 2.1 四个核心对象
 
-| 对象 | 作用 |
-|---|---|
+| 对象               | 作用                                                  |
+| ------------------ | ----------------------------------------------------- |
 | `pyproject.toml` | 声明 Python 版本、直接依赖、开发依赖和 workspace 成员 |
-| `uv.lock` | 锁定解析后的完整依赖版本和不同平台可用包 |
-| `.venv/` | 当前机器实际使用的隔离环境，不提交 Git |
-| uv 缓存 | 保存下载的 Python、wheel 和源码包，可供多个项目复用 |
+| `uv.lock`        | 锁定解析后的完整依赖版本和不同平台可用包              |
+| `.venv/`         | 当前机器实际使用的隔离环境，不提交 Git                |
+| uv 缓存            | 保存下载的 Python、wheel 和源码包，可供多个项目复用   |
 
 根目录声明了 `shared`、`server`、`client` 三个 workspace 成员。workspace 共用一个
 `uv.lock` 和默认 `.venv`，不是三个自动隔离的虚拟环境。`--package` 用来选择本次同步

@@ -1,5 +1,9 @@
 # 手势识别机械臂系统
 
+> Jetson 使用 Python 3.6.9、无法联网或无法安装 uv 时，请使用原生 venv 离线方案：
+> [Jetson Python 3.6.9 离线部署](docs/Jetson-Python36离线部署.md)。该方案只精简部署服务端，
+> 不改变 PC 客户端的 Python 3.10+ 开发环境。
+
 环境管理、`.pytest_cache` 说明与 Jetson 完整部署/排障请阅读
 [`docs/UV与Jetson部署指南.md`](docs/UV与Jetson部署指南.md)。
 
@@ -12,6 +16,7 @@ PC 上的 PySide6 客户端运行 YOLOv5 手势识别，再通过 REST 请求触
 - `server/`：FastAPI、摄像头采集和机械臂控制。
 - `shared/`：Pydantic API 契约与固定枚举。
 - `models/`：本地模型权重目录（权重被 Git 忽略）。
+- `third_party/yolov5-6.2/`：PC 客户端加载 `.pt` 权重所需的 YOLOv5 源码。
 - `tests/`：协议、门控、服务端和模拟硬件测试。
 
 ## 安装与模拟联调
@@ -29,13 +34,10 @@ uv run gesture-server --dry-run --mock-camera
 uv run gesture-client
 ```
 
-模拟服务地址使用 `127.0.0.1:8896`。首次运行客户端前，将参考权重复制到默认目录：
-
-```powershell
-Copy-Item example\Dofbot_YOLO_Qt_Integrated_20260924_v3_recognition_pose\weights\gesture_yolov5s_final.pt models\gesture_yolov5s_final.pt
-```
-
-也可直接在界面中选择权重。客户端配置保存在仓库根目录的 `client-settings.json`。
+模拟服务地址使用 `127.0.0.1:8896`。客户端需要同时具备
+`models/best.pt` 权重和 `third_party/yolov5-6.2/` 源码；
+仅有 `.pt` 文件无法反序列化和运行 YOLOv5 模型。也可直接在界面中选择其他权重。
+客户端配置保存在仓库根目录的 `client-settings.json`。
 
 ## Jetson 部署
 
