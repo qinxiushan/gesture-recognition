@@ -26,7 +26,8 @@ def create_app(settings: Optional[ServerSettings] = None,
                runtime: Optional[Runtime] = None) -> FastAPI:
     settings = settings or ServerSettings()
     if runtime is None:
-        camera: CameraSource = (MockCamera(settings.width, settings.height, settings.jpeg_quality)
+        camera: CameraSource = (MockCamera(settings.width, settings.height, settings.jpeg_quality,
+                                          settings.fps)
                                 if settings.mock_camera else
                                 OpenCVCamera(settings.camera_source, settings.width, settings.height,
                                              settings.fps, settings.jpeg_quality))
@@ -59,12 +60,17 @@ def create_app(settings: Optional[ServerSettings] = None,
         return StatusResponse(arm=request.app.state.runtime.arm.status)
 
     async def frames(camera: CameraSource):
+        sequence = 0
         while True:
             loop = asyncio.get_event_loop()
-            data = await loop.run_in_executor(None, camera.get_jpeg, 2.0)
-            if data:
+            frame = await loop.run_in_executor(None, camera.get_frame, sequence, 1.0)
+            if frame:
+                sequence = frame.sequence
+                data = frame.jpeg
                 yield (b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: " +
-                       str(len(data)).encode() + b"\r\n\r\n" + data + b"\r\n")
+                       str(len(data)).encode() + b"\r\nX-Frame-Sequence: " +
+                       str(sequence).encode() + b"\r\nX-Captured-At: " +
+                       str(frame.captured_at).encode() + b"\r\n\r\n" + data + b"\r\n")
             else:
                 await asyncio.sleep(0.1)
 
