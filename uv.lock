@@ -673,8 +673,16 @@ dependencies = [
     { name = "tqdm" },
 ]
 
+[package.optional-dependencies]
+local-server = [
+    { name = "fastapi" },
+    { name = "pydantic-settings" },
+    { name = "uvicorn" },
+]
+
 [package.metadata]
 requires-dist = [
+    { name = "fastapi", marker = "extra == 'local-server'", specifier = ">=0.115,<1" },
     { name = "gesture-shared", editable = "shared" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "matplotlib", specifier = ">=3.7" },
@@ -682,6 +690,7 @@ requires-dist = [
     { name = "opencv-python", specifier = ">=4.8,<4.12" },
     { name = "pandas", specifier = ">=2.0,<3" },
     { name = "pillow", specifier = ">=10" },
+    { name = "pydantic-settings", marker = "extra == 'local-server'", specifier = ">=2.3" },
     { name = "pyside6", specifier = ">=6.8,<6.9" },
     { name = "pyyaml", specifier = ">=6" },
     { name = "requests", specifier = ">=2.31" },
@@ -691,7 +700,9 @@ requires-dist = [
     { name = "torch", specifier = ">=2.5,<2.6" },
     { name = "torchvision", specifier = ">=0.20,<0.21" },
     { name = "tqdm", specifier = ">=4.66" },
+    { name = "uvicorn", marker = "extra == 'local-server'", specifier = ">=0.30" },
 ]
+provides-extras = ["local-server"]
 
 [[package]]
 name = "gesture-recognition-workspace"

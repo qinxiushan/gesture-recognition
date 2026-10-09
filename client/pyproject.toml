@@ -26,6 +26,10 @@ dependencies = [
     "tqdm>=4.66",
 ]
 
+[project.optional-dependencies]
+# Local camera + mock robot testing, without installing a second OpenCV wheel.
+local-server = ["fastapi>=0.115,<1", "pydantic-settings>=2.3", "uvicorn>=0.30"]
+
 [project.scripts]
 gesture-client = "gesture_client.main:run"
 
