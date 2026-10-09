@@ -24,5 +24,6 @@ gesture-client = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["client/src", "server/src", "shared/src"]
 addopts = "-q"
 
