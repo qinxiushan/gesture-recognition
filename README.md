@@ -1,5 +1,8 @@
 # 手势识别机械臂系统
 
+环境管理、`.pytest_cache` 说明与 Jetson 完整部署/排障请阅读
+[`docs/UV与Jetson部署指南.md`](docs/UV与Jetson部署指南.md)。
+
 这是一个 PC + Jetson 的 Python 单仓库项目。Jetson 采集摄像头并提供 MJPEG 视频流，
 PC 上的 PySide6 客户端运行 YOLOv5 手势识别，再通过 REST 请求触发 DOFBOT 动作。
 

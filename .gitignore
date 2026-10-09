@@ -15,3 +15,7 @@ models/*.engine
 !models/README.md
 example/
 
+# Course report generation artifacts
+.codex-report-work/
+/程嘉标-综合设计IV-项目总结报告初稿.docx
+/学号-姓名-综合设计IV.24秋.项目总结报告模板.docx
