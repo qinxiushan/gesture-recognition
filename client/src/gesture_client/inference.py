@@ -4,7 +4,7 @@ import time
 import sys
 import os
 import pathlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import cv2
@@ -22,11 +22,15 @@ class Detection:
     y: float
     elapsed_ms: float
     rendered: np.ndarray
+    boxes: list[tuple[float, float, float, float, float, str]] = field(default_factory=list)
 
 
 class YoloV5Detector:
-    def __init__(self, weights_path: str, source_path: str, confidence: float):
+    def __init__(self, weights_path: str, source_path: str, confidence: float,
+                 inference_size: int = 640, cpu_threads: int = 4):
         import torch
+        torch.set_num_threads(max(1, cpu_threads))
+        self.inference_size = inference_size
         weights = Path(weights_path).resolve()
         # Fall back to the bundled reference weight when the configured file
         # does not exist yet.
@@ -68,10 +72,19 @@ class YoloV5Detector:
         self.model.to(device)
         self.model.eval()
 
-    def detect(self, bgr: np.ndarray) -> Detection:
+    def warmup(self) -> None:
+        self.detect(np.zeros((480, 640, 3), dtype=np.uint8), render=False)
+
+    def detect(self, bgr: np.ndarray, render: bool = True) -> Detection:
         started = time.perf_counter()
-        results = self.model(cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB), size=640)
+        results = self.model(cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB), size=self.inference_size)
         boxes = results.xyxy[0]
+        annotations = []
+        for box in boxes:
+            x1, y1, x2, y2, score, class_id = [float(v.item()) for v in box[:6]]
+            candidate = self.model.names[int(class_id)]
+            if candidate in SUPPORTED_GESTURES:
+                annotations.append((x1, y1, x2, y2, score, candidate))
         label, confidence, x, y = None, 0.0, 0.0, 0.0
         if boxes is not None and len(boxes):
             areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
@@ -81,7 +94,8 @@ class YoloV5Detector:
             if candidate in SUPPORTED_GESTURES:
                 label, confidence = candidate, score
                 x, y = (x1 + x2) / 2, (y1 + y2) / 2
-        rendered = results.render()[0]
-        rendered = cv2.cvtColor(rendered, cv2.COLOR_RGB2BGR)
+        rendered = bgr
+        if render:
+            rendered = cv2.cvtColor(results.render()[0], cv2.COLOR_RGB2BGR)
         return Detection(label, confidence, x, y,
-                         (time.perf_counter() - started) * 1000, rendered)
+                         (time.perf_counter() - started) * 1000, rendered, annotations)

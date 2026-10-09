@@ -14,6 +14,12 @@ class ClientSettings:
     confidence: float = 0.60
     stable_frames: int = 4
     cooldown_seconds: float = 3.5
+    display_fps: int = 30
+    inference_fps: int = 10
+    inference_size: int = 640
+    cpu_threads: int = 4
+    max_frame_age_seconds: float = 1.0
+    overlay_ttl_seconds: float = 0.35
 
     @property
     def base_url(self) -> str:
