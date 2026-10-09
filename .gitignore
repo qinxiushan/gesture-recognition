@@ -1,4 +1,7 @@
 .venv/
+.venv38/
+.jetson_packages/
+.py36-check/
 __pycache__/
 *.py[cod]
 .pytest_cache/
