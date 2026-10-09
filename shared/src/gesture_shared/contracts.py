@@ -1,10 +1,10 @@
-from __future__ import annotations
-
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Literal
+from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from typing_extensions import Literal
+
+from pydantic import BaseModel, Field
 
 API_VERSION = "v1"
 
@@ -35,21 +35,22 @@ class ActionState(str, Enum):
 
 
 class StrictModel(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    class Config:
+        extra = "forbid"
 
 
 class CameraStatus(StrictModel):
     available: bool
     device: str
-    last_error: str | None = None
+    last_error: Optional[str] = None
 
 
 class ArmStatus(StrictModel):
     available: bool
     busy: bool
-    current_action: str | None = None
-    last_action: str | None = None
-    last_error: str | None = None
+    current_action: Optional[str] = None
+    last_action: Optional[str] = None
+    last_error: Optional[str] = None
 
 
 class HealthResponse(StrictModel):
@@ -75,9 +76,9 @@ class ActionRequest(StrictModel):
 class ActionResponse(StrictModel):
     accepted: bool
     request_id: str
-    action_id: str | None = None
+    action_id: Optional[str] = None
     state: ActionState
-    reason: str | None = None
+    reason: Optional[str] = None
 
 
 class PoseRequest(StrictModel):
