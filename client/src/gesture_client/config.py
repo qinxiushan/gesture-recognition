@@ -9,8 +9,8 @@ from pathlib import Path
 class ClientSettings:
     host: str = "192.168.1.11"
     port: int = 8896
-    weights_path: str = "models/gesture_yolov5s_final.pt"
-    yolo_source: str = "example/Dofbot_YOLO_Qt_Integrated_20260924_v3_recognition_pose/yolov5"
+    weights_path: str = "models/best.pt"
+    yolo_source: str = "third_party/yolov5-6.2"
     confidence: float = 0.60
     stable_frames: int = 4
     cooldown_seconds: float = 3.5

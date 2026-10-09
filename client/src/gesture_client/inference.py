@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import time
 import sys
+import os
+import pathlib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -9,10 +11,7 @@ import cv2
 import numpy as np
 
 SUPPORTED_GESTURES = {"fist", "five", "heartSingle", "ok", "thumbUp"}
-REFERENCE_WEIGHTS = Path(
-    "example/Dofbot_YOLO_Qt_Integrated_20260924_v3_recognition_pose/"
-    "weights/gesture_yolov5s_final.pt"
-)
+REFERENCE_WEIGHTS = Path("models/best.pt")
 
 
 @dataclass
@@ -29,11 +28,15 @@ class YoloV5Detector:
     def __init__(self, weights_path: str, source_path: str, confidence: float):
         import torch
         weights = Path(weights_path).resolve()
-        # A fresh checkout already contains the reference weight under example/.
-        # Use it when the documented models/ copy has not been created yet.
+        # Fall back to the bundled reference weight when the configured file
+        # does not exist yet.
         if not weights.is_file() and REFERENCE_WEIGHTS.is_file():
             weights = REFERENCE_WEIGHTS.resolve()
         source = Path(source_path).resolve()
+        if not source.is_dir():
+            bundled_source = Path("third_party/yolov5-6.2").resolve()
+            if bundled_source.is_dir():
+                source = bundled_source
         if not weights.is_file():
             raise FileNotFoundError(f"模型权重不存在: {weights}")
         if not source.is_dir():
@@ -48,7 +51,15 @@ class YoloV5Detector:
         from utils.torch_utils import copy_attr
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        raw_model = attempt_load(str(weights), map_location=device)
+        if os.name == "nt":
+            original_posix_path = pathlib.PosixPath
+            try:
+                pathlib.PosixPath = pathlib.PurePosixPath
+                raw_model = attempt_load(str(weights), device=device)
+            finally:
+                pathlib.PosixPath = original_posix_path
+        else:
+            raw_model = attempt_load(str(weights), device=device)
         self.model = AutoShape(raw_model)
         copy_attr(self.model, raw_model,
                   include=("yaml", "nc", "hyp", "names", "stride"))
